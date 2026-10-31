@@ -1,4 +1,4 @@
-import { sendReportMail, smtpReady } from "@/lib/mail";
+import { describeMailError, sendReportMail, smtpReady } from "@/lib/mail";
 import { readSettings } from "@/lib/store";
 import type { Report } from "@/lib/types";
 import { NextResponse } from "next/server";
@@ -47,8 +47,8 @@ export async function POST(request: Request) {
   try {
     await sendReportMail(settings, sample, to, new URL("/", request.url).origin);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "发送失败";
-    return NextResponse.json({ error: `测试信没有发出：${message}` }, { status: 502 });
+    console.error("[opinion] 测试信失败", describeMailError(error));
+    return NextResponse.json({ error: `测试信没有发出：${describeMailError(error)}` }, { status: 502 });
   }
   return NextResponse.json({ ok: true });
 }

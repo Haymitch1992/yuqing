@@ -1,3 +1,5 @@
+import dns from "node:dns/promises";
+import net from "node:net";
 import nodemailer from "nodemailer";
 import { formatAmountWan, formatPct, formatPrice, formatSigned, formatWanShou, formatYi, formatYiShares } from "@/lib/format";
 import { formatCnDate, formatCnDateTime } from "@/lib/time";
@@ -5,6 +7,24 @@ import type { AppSettings, Report } from "@/lib/types";
 
 export function smtpReady(settings: AppSettings): boolean {
   return Boolean(settings.smtp.host && settings.smtp.user && settings.smtp.pass);
+}
+
+export function describeMailError(error: unknown): string {
+  const nested =
+    error && typeof error === "object" && "errors" in error && Array.isArray(error.errors)
+      ? error.errors.filter((item): item is NodeJS.ErrnoException => item instanceof Error)
+      : [];
+  const codes = nested.map((item) => item.code).filter((code): code is string => Boolean(code));
+  if (codes.some((code) => ["ETIMEDOUT", "ECONNREFUSED", "ENETUNREACH", "EHOSTUNREACH", "ESOCKET", "ECONNRESET"].includes(code))) {
+    return "连不上邮件服务器。请确认主机、端口和加密方式，并检查当前网络能否访问该 SMTP 端口。163 邮箱使用 smtp.163.com 的 465 端口，并开启 SSL。";
+  }
+  const responseCode =
+    error && typeof error === "object" && "responseCode" in error ? Number(error.responseCode) : 0;
+  if (responseCode === 535 || responseCode === 550) {
+    return "邮箱服务器拒绝了登录。163 邮箱要填授权码，不是登录密码，并确认 SMTP 服务已开启。";
+  }
+  if (error instanceof Error && error.message && error.message !== "AggregateError") return error.message;
+  return "发送失败";
 }
 
 function cell(label: string, value: string): string {
@@ -72,15 +92,34 @@ export function renderEmailHtml(report: Report, previewUrl: string): string {
 </html>`;
 }
 
+async function connectHost(host: string): Promise<{ host: string; servername?: string }> {
+  const trimmed = host.trim();
+  if (net.isIP(trimmed)) return { host: trimmed };
+  try {
+    const addresses = await dns.resolve4(trimmed);
+    if (addresses[0]) return { host: addresses[0], servername: trimmed };
+  } catch {
+    // 解析失败时仍用主机名，让发送错误回到原来的连接失败提示。
+  }
+  return { host: trimmed };
+}
+
 export async function sendReportMail(settings: AppSettings, report: Report, to: string, previewUrl: string): Promise<void> {
   if (!smtpReady(settings)) {
     throw new Error("还没有配置发信邮箱");
   }
+  // 主机同时公布 IPv6 时，Node 会先试没有路由的 IPv6，再在大约 250ms 内放弃 IPv4。
+  // 163 的 465 端口握手比这个窗口慢，于是信在连上之前就被放弃。这里固定走 IPv4。
+  const target = await connectHost(settings.smtp.host);
   const transporter = nodemailer.createTransport({
-    host: settings.smtp.host,
+    host: target.host,
     port: settings.smtp.port,
     secure: settings.smtp.secure,
     auth: { user: settings.smtp.user, pass: settings.smtp.pass },
+    tls: target.servername ? { servername: target.servername } : undefined,
+    connectionTimeout: 20_000,
+    greetingTimeout: 20_000,
+    socketTimeout: 20_000,
   });
   const from = settings.smtp.from || settings.smtp.user;
   await transporter.sendMail({
