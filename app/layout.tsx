@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "交控科技舆情日报",
-  description: "每个交易相关自然日生成交控科技舆情草稿，预览后再发到指定邮箱。",
+  description: "每个自然日自动生成交控科技舆情报告，并发送到指定邮箱；也可手动预览后再发。",
 };
 
 export default function RootLayout({

@@ -14,10 +14,10 @@ export default async function HomePage() {
   return (
     <main className="mx-auto grid max-w-5xl gap-8 px-4 py-8">
       <section className="grid gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">先出草稿，看过再发</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">每日自动生成，也可手动再发</h1>
         <p className="max-w-3xl text-sm leading-6 text-[#3f3a34]">
-          每天 {settings.scheduleEnabled ? settings.scheduleTime : "（定时已关闭）"}（上海时间）会生成交控科技当日草稿；中午已有未发送草稿时，晚上到点或再点生成都会重新采集。
-          打开预览之后，才能发到邮箱。当前发信{smtpReady(settings) ? "已配置" : "还没配置"}。
+          每天 {settings.scheduleEnabled ? settings.scheduleTime : "（定时已关闭）"}（上海时间）会自动生成交控科技当日报告，并发到已保存的收件人；中午已有未发送草稿时，到点会重新采集后再发。
+          也可以在这里手动生成，或打开预览后再发。当前发信{smtpReady(settings) ? "已配置" : "还没配置"}。
         </p>
       </section>
 

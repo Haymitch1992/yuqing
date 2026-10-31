@@ -108,14 +108,14 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
       }}
     >
       <section className="grid gap-4 border border-[#e6e0d6] bg-white p-4">
-        <h2 className="text-lg font-semibold">每天何时生成草稿</h2>
+        <h2 className="text-lg font-semibold">每天何时自动生成并发信</h2>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
             checked={scheduleEnabled}
             onChange={(event) => setScheduleEnabled(event.target.checked)}
           />
-          开启定时生成。到点只生成草稿，不会自动发信。
+          开启定时任务。到点会重新采集当天报告，并自动发到下方收件人。
         </label>
         <div className="grid gap-2 sm:max-w-xs">
           <Label htmlFor="schedule-time">上海时间</Label>
@@ -128,7 +128,7 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
           />
         </div>
         <p className="text-sm text-[#6b645b]">
-          默认 20:30，是为了赶上当晚的公告。服务进程要一直开着，定时才会跑。
+          默认 17:00。服务进程要一直开着，定时才会跑。发信前请先保存完整的 SMTP 和收件人。
         </p>
       </section>
 

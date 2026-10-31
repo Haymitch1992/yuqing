@@ -10,7 +10,7 @@ export default async function SettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">发信设置</h1>
         <p className="mt-2 text-sm leading-6 text-[#3f3a34]">
-          定时任务只负责把当天的草稿放进列表。邮件一定要在预览页确认后才发出。
+          定时任务到点会自动生成当天报告并发送邮件。也可以在列表或预览页手动再发一封。
         </p>
       </div>
       <SettingsForm

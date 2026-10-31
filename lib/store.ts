@@ -8,7 +8,7 @@ const reportDir = path.join(dataDir, "reports");
 
 const defaultSettings: AppSettings = {
   scheduleEnabled: true,
-  scheduleTime: "20:30",
+  scheduleTime: "17:00",
   recipients: [],
   smtp: {
     host: "",
