@@ -1,5 +1,6 @@
 "use client";
 
+import { GenerateProgress } from "@/components/generate-progress";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -121,6 +122,7 @@ export function PreviewActions({
 
   return (
     <div className="sticky top-0 z-10 border-b border-[#e6e0d6] bg-[#fbf8f2]/95 backdrop-blur">
+      <GenerateProgress open={refreshing} dateLabel={id} mode="refresh" />
       <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm">
           <Link href="/" className="text-[#6b645b] underline-offset-4 hover:underline">
