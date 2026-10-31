@@ -59,6 +59,9 @@ export default async function HomePage() {
                         <Link href={`/reports/${report.id}`} className="underline underline-offset-4">
                           预览
                         </Link>
+                        <a href={`/api/reports/${report.id}/docx`} className="ml-3 underline underline-offset-4">
+                          Word
+                        </a>
                       </td>
                     </tr>
                   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -132,6 +132,9 @@ export function PreviewActions({
               {refreshing ? "重新采集…" : "重新采集"}
             </Button>
           ) : null}
+          <a href={`/api/reports/${id}/docx`} className={buttonVariants({ variant: "outline" })}>
+            导出 Word
+          </a>
           <Button type="button" disabled={!ready || pending} onClick={() => setOpen(true)}>
             {sent ? "再发一封" : "发送到邮箱"}
           </Button>
