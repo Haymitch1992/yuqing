@@ -30,3 +30,15 @@ npm run dev
 在「发信设置」里填写 SMTP。QQ 邮箱示例：主机 `smtp.qq.com`，端口 `465`，勾选 SSL，密码填授权码。授权码保存在本机 `data/settings.json`，这个目录不会进仓库。
 
 可以先给自己发一封测试信，再回到报告预览页确认发送。
+
+## 容器化部署
+
+服务器上用 Docker 常驻运行（含 17:00 自动生成并发送）。详细步骤见 [docs/部署说明.md](docs/部署说明.md)。
+
+```bash
+mkdir -p data && sudo chown -R 1001:1001 data
+export APP_ORIGIN=http://你的服务器IP:38471
+docker compose up -d --build
+```
+
+访问 `http://服务器地址:38471`。报告与 SMTP 设置保存在宿主机 `./data`，重建镜像不会丢。
