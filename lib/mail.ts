@@ -86,7 +86,7 @@ export function renderEmailHtml(report: Report, previewUrl: string): string {
       ${eventRows || `<tr><td colspan="5" style="padding:8px 10px;border:1px solid #e6e0d6">当日没有强相关事件。</td></tr>`}
     </table>
     <p style="margin-top:20px"><a href="${previewUrl}">在系统里打开完整预览</a></p>
-    <p style="color:#6b645b;font-size:12px">行情来自腾讯行情，公告来自上交所，新闻来自东方财富搜索中标题含公司名或证券代码的结果。热度是同题条数，不是阅读量。</p>
+    <p style="color:#6b645b;font-size:12px">行情来自腾讯行情，公告来自上交所。新闻来自东方财富搜索，以及网易、同花顺和腾讯自选股的公开列表，只保留标题含公司名或证券代码的结果。热度是同题条数，不是阅读量。</p>
   </div>
 </body>
 </html>`;

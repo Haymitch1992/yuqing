@@ -1,5 +1,5 @@
 export type Sentiment = "正面" | "中性" | "负面";
-export type Channel = "公告" | "网站";
+export type Channel = "公告" | "网站" | "APP";
 
 export interface Article {
   id: string;

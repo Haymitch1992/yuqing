@@ -214,7 +214,7 @@ async function searchEastmoney(keyword: string, reportDate: string): Promise<Eas
   return found;
 }
 
-function isStrongTitle(title: string): boolean {
+export function isStrongTitle(title: string): boolean {
   return title.includes(COMPANY) || title.includes(CODE);
 }
 
