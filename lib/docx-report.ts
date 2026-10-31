@@ -8,14 +8,16 @@ import {
   formatYi,
   formatYiShares,
 } from "@/lib/format";
+import { priceChartCaption, renderPriceChartSvg } from "@/lib/price-chart";
 import { formatCnDate, formatCnDateTime } from "@/lib/time";
-import type { Cluster, Report } from "@/lib/types";
+import type { Cluster, KlineBar, Report } from "@/lib/types";
 import {
   AlignmentType,
   BorderStyle,
   Document,
   ExternalHyperlink,
   HeadingLevel,
+  ImageRun,
   Packer,
   Paragraph,
   Table,
@@ -25,6 +27,7 @@ import {
   WidthType,
   type IBorderOptions,
 } from "docx";
+import sharp from "sharp";
 
 const FONT = "微软雅黑";
 const LINE = { style: BorderStyle.SINGLE, size: 4, color: "E6E0D6" } satisfies IBorderOptions;
@@ -230,6 +233,12 @@ function eventTable(clusters: Cluster[]): Table | Paragraph {
   ]);
 }
 
+async function priceChartImage(bars: KlineBar[], tradeDate: string): Promise<Buffer | null> {
+  const svg = renderPriceChartSvg(bars, tradeDate);
+  if (!svg) return null;
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
 export async function renderReportDocx(report: Report): Promise<Buffer> {
   const quote = report.quote;
   const negative = report.clusters.filter((cluster) => cluster.sentiment === "负面");
@@ -255,37 +264,21 @@ export async function renderReportDocx(report: Report): Promise<Buffer> {
     heading("一、行情概况", HeadingLevel.HEADING_1),
   );
 
-  if (quote && report.kline.length > 0) {
+  const chart = quote ? await priceChartImage(report.kline, quote.tradeDate) : null;
+  if (chart && quote) {
     children.push(
-      textParagraph(`近 ${report.kline.length} 个交易日收盘价（元），前复权。标有「截止」的一行是本报告使用的交易日。来源：腾讯行情。`, {
-        size: 18,
-        color: MUTED,
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [
+          new ImageRun({
+            type: "png",
+            data: chart,
+            transformation: { width: 640, height: 207 },
+            altText: { title: "收盘价", description: priceChartCaption(report.kline.length, quote.tradeDate), name: "收盘价" },
+          }),
+        ],
       }),
-      grid([
-        new TableRow({
-          tableHeader: true,
-          children: [headerCell("日期", 40), headerCell("收盘价", 30, AlignmentType.RIGHT), headerCell("备注", 30)],
-        }),
-        ...report.kline.map(
-          (bar) =>
-            new TableRow({
-              children: [
-                value(bar.date, 40, bar.date === quote.tradeDate ? DOWN : undefined),
-                cell(
-                  [
-                    paragraph(
-                      [run(formatPrice(bar.close), { color: bar.date === quote.tradeDate ? DOWN : undefined })],
-                      40,
-                      AlignmentType.RIGHT,
-                    ),
-                  ],
-                  { width: 30 },
-                ),
-                value(bar.date === quote.tradeDate ? "截止" : "", 30),
-              ],
-            }),
-        ),
-      ]),
+      textParagraph(priceChartCaption(report.kline.length, quote.tradeDate), { size: 18, color: MUTED }),
     );
   }
 

@@ -9,54 +9,17 @@ import {
   formatYiShares,
   toneClass,
 } from "@/lib/format";
+import { priceChartCaption, renderPriceChartSvg } from "@/lib/price-chart";
 import { formatCnDate, formatCnDateTime } from "@/lib/time";
 import type { KlineBar, Report } from "@/lib/types";
 
 function PriceChart({ bars, tradeDate }: { bars: KlineBar[]; tradeDate: string }) {
-  if (bars.length < 2) return null;
-  const width = 680;
-  const height = 220;
-  const pad = { left: 48, right: 16, top: 16, bottom: 28 };
-  const closes = bars.map((bar) => bar.close);
-  const min = Math.min(...closes);
-  const max = Math.max(...closes);
-  const span = max - min || 1;
-  const xAt = (index: number) =>
-    pad.left + (index * (width - pad.left - pad.right)) / (bars.length - 1);
-  const yAt = (value: number) => pad.top + ((max - value) / span) * (height - pad.top - pad.bottom);
-  const line = bars
-    .map((bar, index) => `${index === 0 ? "M" : "L"}${xAt(index).toFixed(1)},${yAt(bar.close).toFixed(1)}`)
-    .join(" ");
-  const area = `${line} L${xAt(bars.length - 1).toFixed(1)},${height - pad.bottom} L${xAt(0).toFixed(1)},${height - pad.bottom} Z`;
-  const last = bars[bars.length - 1];
+  const svg = renderPriceChartSvg(bars, tradeDate);
+  if (!svg) return null;
   return (
     <figure>
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label="近20个交易日收盘价">
-        <line x1={pad.left} y1={pad.top} x2={pad.left} y2={height - pad.bottom} stroke="#e6e0d6" />
-        <line x1={pad.left} y1={height - pad.bottom} x2={width - pad.right} y2={height - pad.bottom} stroke="#e6e0d6" />
-        <text x={4} y={yAt(max) + 4} fontSize="11" fill="#6b645b">
-          {max.toFixed(2)}
-        </text>
-        <text x={4} y={yAt(min) + 4} fontSize="11" fill="#6b645b">
-          {min.toFixed(2)}
-        </text>
-        <path d={area} fill="#1c1917" opacity="0.06" />
-        <path d={line} fill="none" stroke="#1c1917" strokeWidth="1.6" />
-        {bars.map((bar, index) =>
-          bar.date === tradeDate ? (
-            <circle key={bar.date} cx={xAt(index)} cy={yAt(bar.close)} r="3.5" fill="#c5362b" />
-          ) : null,
-        )}
-        <text x={pad.left} y={height - 8} fontSize="11" fill="#6b645b">
-          {bars[0].date.slice(5)}
-        </text>
-        <text x={width - pad.right} y={height - 8} fontSize="11" fill="#6b645b" textAnchor="end">
-          {last.date.slice(5)}
-        </text>
-      </svg>
-      <figcaption className="mt-1 text-xs text-[#6b645b]">
-        近 {bars.length} 个交易日收盘价（元），前复权。红点是本报告使用的截止交易日 {tradeDate}。来源：腾讯行情。
-      </figcaption>
+      <div dangerouslySetInnerHTML={{ __html: svg }} />
+      <figcaption className="mt-1 text-xs text-[#6b645b]">{priceChartCaption(bars.length, tradeDate)}</figcaption>
     </figure>
   );
 }
