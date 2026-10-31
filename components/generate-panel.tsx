@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function GeneratePanel({ today, yesterday }: { today: string; yesterday: string }) {
+export function GeneratePanel({ today }: { today: string }) {
   const router = useRouter();
   const [date, setDate] = useState(today);
   const [pending, setPending] = useState(false);
@@ -60,9 +60,6 @@ export function GeneratePanel({ today, yesterday }: { today: string; yesterday: 
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={pending}>
           {pending ? "正在采集…" : "生成并预览"}
-        </Button>
-        <Button type="button" variant="outline" disabled={pending} onClick={() => void generate(yesterday)}>
-          生成昨天
         </Button>
       </div>
       {error ? (

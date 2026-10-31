@@ -1,6 +1,6 @@
 import { GeneratePanel } from "@/components/generate-panel";
 import { listReports, readSettings } from "@/lib/store";
-import { addDays, formatCnDate, formatCnDateTime, shanghaiToday } from "@/lib/time";
+import { formatCnDate, formatCnDateTime, shanghaiToday } from "@/lib/time";
 import { reportStatus } from "@/lib/types";
 import { smtpReady } from "@/lib/mail";
 import Link from "next/link";
@@ -10,7 +10,6 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [reports, settings] = await Promise.all([listReports(), readSettings()]);
   const today = shanghaiToday();
-  const yesterday = addDays(today, -1);
 
   return (
     <main className="mx-auto grid max-w-5xl gap-8 px-4 py-8">
@@ -22,13 +21,13 @@ export default async function HomePage() {
         </p>
       </section>
 
-      <GeneratePanel today={today} yesterday={yesterday} />
+      <GeneratePanel today={today} />
 
       <section className="grid gap-3">
         <h2 className="text-lg font-semibold">已生成的报告</h2>
         {reports.length === 0 ? (
           <div className="border border-dashed border-[#cfc6b8] bg-white px-4 py-8 text-sm leading-6 text-[#3f3a34]">
-            还没有报告。今天是 {formatCnDate(today)}。媒体报道通常记在发布当天，上交所公告记在披露日。可以先生成昨天和今天各一份。
+            还没有报告。今天是 {formatCnDate(today)}。媒体报道通常记在发布当天，上交所公告记在披露日。可以先选择日期生成一份。
           </div>
         ) : (
           <div className="overflow-x-auto border border-[#e6e0d6] bg-white">
