@@ -4,6 +4,7 @@ import { smtpReady } from "@/lib/mail";
 import { readReport, readSettings } from "@/lib/store";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,14 +23,16 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   if (!report) notFound();
   return (
     <main>
-      <PreviewActions
-        id={report.id}
-        reviewedAt={report.reviewedAt}
-        sentAt={report.sentAt}
-        sentTo={report.sentTo}
-        recipients={settings.recipients}
-        smtpReady={smtpReady(settings)}
-      />
+      <Suspense fallback={<div className="border-b border-[#e6e0d6] px-4 py-3 text-sm text-[#6b645b]">正在打开预览…</div>}>
+        <PreviewActions
+          id={report.id}
+          reviewedAt={report.reviewedAt}
+          sentAt={report.sentAt}
+          sentTo={report.sentTo}
+          recipients={settings.recipients}
+          smtpReady={smtpReady(settings)}
+        />
+      </Suspense>
       <ReportDocument report={report} />
     </main>
   );

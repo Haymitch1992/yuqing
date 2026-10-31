@@ -1,9 +1,9 @@
 import { GeneratePanel } from "@/components/generate-panel";
+import { ReportListActions } from "@/components/report-list-actions";
 import { listReports, readSettings } from "@/lib/store";
 import { formatCnDate, formatCnDateTime, shanghaiToday } from "@/lib/time";
 import { reportStatus } from "@/lib/types";
 import { smtpReady } from "@/lib/mail";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -54,14 +54,7 @@ export default async function HomePage() {
                         {report.sentTo ? <span className="block break-all text-xs text-[#6b645b]">{report.sentTo}</span> : null}
                       </td>
                       <td className="px-3 py-3 text-[#6b645b]">{formatCnDateTime(report.createdAt)}</td>
-                      <td className="px-3 py-3 text-right">
-                        <Link href={`/reports/${report.id}`} className="underline underline-offset-4">
-                          预览
-                        </Link>
-                        <a href={`/api/reports/${report.id}/docx`} className="ml-3 underline underline-offset-4">
-                          Word
-                        </a>
-                      </td>
+                      <ReportListActions id={report.id} sent={Boolean(report.sentAt)} />
                     </tr>
                   );
                 })}

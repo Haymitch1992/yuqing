@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { parseRecipients, recipientFieldError } from "@/lib/recipients";
 import { formatCnDateTime } from "@/lib/time";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function recipientLines(value: string): string {
@@ -38,6 +38,8 @@ export function PreviewActions({
   smtpReady: boolean;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const openSend = searchParams.get("send") === "1";
   const [ready, setReady] = useState(Boolean(reviewedAt));
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState(recipientLines(sentTo || recipients.join("\n")));
@@ -50,7 +52,13 @@ export function PreviewActions({
     let cancelled = false;
     void fetch(`/api/reports/${id}/review`, { method: "POST" })
       .then((response) => {
-        if (!cancelled && response.ok) setReady(true);
+        if (!cancelled && response.ok) {
+          setReady(true);
+          if (openSend) {
+            setOpen(true);
+            router.replace(`/reports/${id}`, { scroll: false });
+          }
+        }
       })
       .catch(() => {
         if (!cancelled) setError("预览状态没有记下，发送前请刷新页面");
@@ -58,7 +66,7 @@ export function PreviewActions({
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, openSend, router]);
 
   async function send() {
     const fieldError = recipientFieldError(email, true);
