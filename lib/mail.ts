@@ -1,6 +1,7 @@
 import dns from "node:dns/promises";
 import net from "node:net";
 import nodemailer from "nodemailer";
+import { renderReportDocx } from "@/lib/docx-report";
 import { formatAmountWan, formatPct, formatPrice, formatSigned, formatWanShou, formatYi, formatYiShares } from "@/lib/format";
 import { formatCnDate, formatCnDateTime } from "@/lib/time";
 import type { AppSettings, Report } from "@/lib/types";
@@ -85,7 +86,7 @@ export function renderEmailHtml(report: Report, previewUrl: string): string {
       </tr>
       ${eventRows || `<tr><td colspan="5" style="padding:8px 10px;border:1px solid #e6e0d6">当日没有强相关事件。</td></tr>`}
     </table>
-    <p style="margin-top:20px"><a href="${previewUrl}">在系统里打开完整预览</a></p>
+    <p style="margin-top:20px">完整 Word 报告见附件。也可以 <a href="${previewUrl}">在系统里打开完整预览</a>。</p>
     <p style="color:#6b645b;font-size:12px">行情来自腾讯行情，公告来自上交所。新闻来自东方财富搜索，以及网易、同花顺和腾讯自选股的公开列表，只保留标题含公司名或证券代码的结果。热度是同题条数，不是阅读量。</p>
   </div>
 </body>
@@ -122,11 +123,20 @@ export async function sendReportMail(settings: AppSettings, report: Report, to: 
     socketTimeout: 20_000,
   });
   const from = settings.smtp.from || settings.smtp.user;
+  const docx = await renderReportDocx(report);
+  const filename = `交控科技舆情日报-${report.date}.docx`;
   await transporter.sendMail({
     from,
     to: Array.isArray(to) ? to : [to],
     subject: `交控科技舆情日报 ${report.date}`,
-    text: `${report.overview}\n${report.peak}\n\n完整预览：${previewUrl}`,
+    text: `${report.overview}\n${report.peak}\n\n完整 Word 报告见附件。\n完整预览：${previewUrl}`,
     html: renderEmailHtml(report, previewUrl),
+    attachments: [
+      {
+        filename,
+        content: docx,
+        contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      },
+    ],
   });
 }

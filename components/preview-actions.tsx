@@ -151,7 +151,7 @@ export function PreviewActions({
             <DialogTitle>发送这份日报</DialogTitle>
             <DialogDescription>
               {smtpReady
-                ? "这些地址都会收到同一封日报，内容是标题、综述和事件表。发送前你已经看到了当前这份预览。"
+                ? "这些地址都会收到同一封日报，正文是标题、综述和事件表，并附带与预览一致的 Word。发送前你已经看到了当前这份预览。"
                 : "还没有配置发信邮箱。先保存 SMTP，再回到这里发送。"}
             </DialogDescription>
           </DialogHeader>
