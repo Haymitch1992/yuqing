@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { parseRecipients } from "@/lib/recipients";
 import type { AppSettings, Report } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
@@ -8,7 +9,7 @@ const reportDir = path.join(dataDir, "reports");
 const defaultSettings: AppSettings = {
   scheduleEnabled: true,
   scheduleTime: "20:30",
-  recipient: "",
+  recipients: [],
   smtp: {
     host: "",
     port: 465,
@@ -27,10 +28,14 @@ export async function readSettings(): Promise<AppSettings> {
   await ensureDirs();
   try {
     const raw = await readFile(path.join(dataDir, "settings.json"), "utf8");
-    const parsed = JSON.parse(raw) as AppSettings;
+    const parsed = JSON.parse(raw) as Partial<AppSettings> & { recipient?: string };
+    const storedRecipients = parsed.recipients?.length ? parsed.recipients : (parsed.recipient ?? "");
     return {
       ...defaultSettings,
-      ...parsed,
+      scheduleEnabled:
+        typeof parsed.scheduleEnabled === "boolean" ? parsed.scheduleEnabled : defaultSettings.scheduleEnabled,
+      scheduleTime: parsed.scheduleTime || defaultSettings.scheduleTime,
+      recipients: parseRecipients(storedRecipients).emails,
       smtp: { ...defaultSettings.smtp, ...parsed.smtp },
     };
   } catch {

@@ -52,7 +52,7 @@ export default async function HomePage() {
                       <td className="px-3 py-3 tabular-nums">{report.stats.negative}</td>
                       <td className="px-3 py-3">
                         {status}
-                        {report.sentTo ? <span className="block text-xs text-[#6b645b]">{report.sentTo}</span> : null}
+                        {report.sentTo ? <span className="block break-all text-xs text-[#6b645b]">{report.sentTo}</span> : null}
                       </td>
                       <td className="px-3 py-3 text-[#6b645b]">{formatCnDateTime(report.createdAt)}</td>
                       <td className="px-3 py-3 text-right">

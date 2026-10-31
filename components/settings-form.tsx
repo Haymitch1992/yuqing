@@ -3,12 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { formatRecipients, parseRecipients, recipientFieldError } from "@/lib/recipients";
 import { useState } from "react";
 
 export interface SettingsFormValue {
   scheduleEnabled: boolean;
   scheduleTime: string;
-  recipient: string;
+  recipients: string;
   smtpReady: boolean;
   smtp: {
     host: string;
@@ -23,7 +25,7 @@ export interface SettingsFormValue {
 export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
   const [scheduleEnabled, setScheduleEnabled] = useState(initial.scheduleEnabled);
   const [scheduleTime, setScheduleTime] = useState(initial.scheduleTime);
-  const [recipient, setRecipient] = useState(initial.recipient);
+  const [recipients, setRecipients] = useState(initial.recipients);
   const [host, setHost] = useState(initial.smtp.host);
   const [port, setPort] = useState(String(initial.smtp.port));
   const [secure, setSecure] = useState(initial.smtp.secure);
@@ -47,7 +49,7 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
         body: JSON.stringify({
           scheduleEnabled,
           scheduleTime,
-          recipient,
+          recipients,
           smtp: { host, port: Number(port), secure, user, from, pass },
         }),
       });
@@ -58,6 +60,7 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
       }
       if (pass.trim()) setHasPassword(true);
       setPass("");
+      setRecipients(parseRecipients(recipients).emails.join("\n"));
       setMessage(payload.smtpReady ? "已保存，发信配置完整。" : "已保存。发信还缺主机、账号或授权码。");
     } catch {
       setError("网络中断，设置没有保存");
@@ -70,18 +73,25 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
     setTesting(true);
     setMessage("");
     setError("");
+    const fieldError = recipientFieldError(recipients, true);
+    if (fieldError) {
+      setError(fieldError);
+      setTesting(false);
+      return;
+    }
+    const to = formatRecipients(parseRecipients(recipients).emails);
     try {
       const response = await fetch("/api/settings/test-mail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: recipient }),
+        body: JSON.stringify({ to: recipients }),
       });
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
         setError(payload.error ?? "测试信没有发出");
         return;
       }
-      setMessage(`测试信已发到 ${recipient}`);
+      setMessage(`测试信已发到 ${to}`);
     } catch {
       setError("网络中断，测试信没有发出");
     } finally {
@@ -125,14 +135,18 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
       <section className="grid gap-4 border border-[#e6e0d6] bg-white p-4">
         <h2 className="text-lg font-semibold">发信邮箱</h2>
         <div className="grid gap-2">
-          <Label htmlFor="recipient">默认收件人</Label>
-          <Input
-            id="recipient"
-            type="email"
-            value={recipient}
-            placeholder="name@example.com"
-            onChange={(event) => setRecipient(event.target.value)}
+          <Label htmlFor="recipients">收件人</Label>
+          <Textarea
+            id="recipients"
+            value={recipients}
+            rows={4}
+            spellCheck={false}
+            placeholder={"name@example.com\nother@example.com"}
+            onChange={(event) => setRecipients(event.target.value)}
           />
+          <p className="text-sm text-[#6b645b]">
+            每行一个地址，也可以用逗号或分号分开。测试信和日报都会发给这里的全部地址。
+          </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
@@ -179,8 +193,8 @@ export function SettingsForm({ initial }: { initial: SettingsFormValue }) {
           <Button type="submit" disabled={pending}>
             {pending ? "正在保存…" : "保存设置"}
           </Button>
-          <Button type="button" variant="outline" disabled={testing || !recipient} onClick={() => void testMail()}>
-            {testing ? "正在发测试信…" : "给默认收件人发测试信"}
+          <Button type="button" variant="outline" disabled={testing || !recipients.trim()} onClick={() => void testMail()}>
+            {testing ? "正在发测试信…" : "给这些收件人发测试信"}
           </Button>
         </div>
         {message ? <p className="text-sm text-[#1f7a45]">{message}</p> : null}

@@ -9,32 +9,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { parseRecipients, recipientFieldError } from "@/lib/recipients";
 import { formatCnDateTime } from "@/lib/time";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+function recipientLines(value: string): string {
+  const { emails } = parseRecipients(value);
+  return emails.length ? emails.join("\n") : value;
+}
 
 export function PreviewActions({
   id,
   reviewedAt,
   sentAt,
   sentTo,
-  recipient,
+  recipients,
   smtpReady,
 }: {
   id: string;
   reviewedAt: string | null;
   sentAt: string | null;
   sentTo: string | null;
-  recipient: string;
+  recipients: string[];
   smtpReady: boolean;
 }) {
   const router = useRouter();
   const [ready, setReady] = useState(Boolean(reviewedAt));
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState(sentTo || recipient);
+  const [email, setEmail] = useState(recipientLines(sentTo || recipients.join("\n")));
   const [pending, setPending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -55,6 +61,11 @@ export function PreviewActions({
   }, [id]);
 
   async function send() {
+    const fieldError = recipientFieldError(email, true);
+    if (fieldError) {
+      setError(fieldError);
+      return;
+    }
     setPending(true);
     setError("");
     try {
@@ -137,21 +148,23 @@ export function PreviewActions({
             <DialogTitle>发送这份日报</DialogTitle>
             <DialogDescription>
               {smtpReady
-                ? "收件人会收到标题、综述和事件表。发送前你已经看到了当前这份预览。"
+                ? "这些地址都会收到同一封日报，内容是标题、综述和事件表。发送前你已经看到了当前这份预览。"
                 : "还没有配置发信邮箱。先保存 SMTP，再回到这里发送。"}
             </DialogDescription>
           </DialogHeader>
           {smtpReady ? (
             <div className="grid gap-2">
-              <Label htmlFor="recipient">收件邮箱</Label>
-              <Input
+              <Label htmlFor="recipient">收件人</Label>
+              <Textarea
                 id="recipient"
-                type="email"
                 value={email}
-                placeholder="name@example.com"
+                rows={4}
+                spellCheck={false}
+                placeholder={"name@example.com\nother@example.com"}
                 onChange={(event) => setEmail(event.target.value)}
                 required
               />
+              <p className="text-sm text-[#6b645b]">每行一个地址，也可以用逗号或分号分开。</p>
             </div>
           ) : (
             <Link href="/settings" className="text-sm underline underline-offset-4">
@@ -162,7 +175,7 @@ export function PreviewActions({
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               取消
             </Button>
-            <Button type="button" disabled={!smtpReady || pending || !email} onClick={() => void send()}>
+            <Button type="button" disabled={!smtpReady || pending || !email.trim()} onClick={() => void send()}>
               {pending ? "正在发送…" : "确认发送"}
             </Button>
           </DialogFooter>

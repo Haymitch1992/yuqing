@@ -27,7 +27,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         reviewedAt={report.reviewedAt}
         sentAt={report.sentAt}
         sentTo={report.sentTo}
-        recipient={settings.recipient}
+        recipients={settings.recipients}
         smtpReady={smtpReady(settings)}
       />
       <ReportDocument report={report} />

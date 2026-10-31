@@ -104,7 +104,7 @@ async function connectHost(host: string): Promise<{ host: string; servername?: s
   return { host: trimmed };
 }
 
-export async function sendReportMail(settings: AppSettings, report: Report, to: string, previewUrl: string): Promise<void> {
+export async function sendReportMail(settings: AppSettings, report: Report, to: string | string[], previewUrl: string): Promise<void> {
   if (!smtpReady(settings)) {
     throw new Error("还没有配置发信邮箱");
   }
@@ -124,7 +124,7 @@ export async function sendReportMail(settings: AppSettings, report: Report, to: 
   const from = settings.smtp.from || settings.smtp.user;
   await transporter.sendMail({
     from,
-    to,
+    to: Array.isArray(to) ? to : [to],
     subject: `交控科技舆情日报 ${report.date}`,
     text: `${report.overview}\n${report.peak}\n\n完整预览：${previewUrl}`,
     html: renderEmailHtml(report, previewUrl),

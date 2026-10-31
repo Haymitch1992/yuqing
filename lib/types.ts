@@ -103,7 +103,7 @@ export interface SmtpSettings {
 export interface AppSettings {
   scheduleEnabled: boolean;
   scheduleTime: string;
-  recipient: string;
+  recipients: string[];
   smtp: SmtpSettings;
 }
 

@@ -17,7 +17,7 @@ export default async function SettingsPage() {
         initial={{
           scheduleEnabled: settings.scheduleEnabled,
           scheduleTime: settings.scheduleTime,
-          recipient: settings.recipient,
+          recipients: settings.recipients.join("\n"),
           smtpReady: Boolean(settings.smtp.host && settings.smtp.user && settings.smtp.pass),
           smtp: {
             host: settings.smtp.host,
