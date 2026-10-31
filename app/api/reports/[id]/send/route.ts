@@ -23,9 +23,8 @@ export async function POST(
   if (!settings.smtp.host || !settings.smtp.user || !settings.smtp.pass) {
     return NextResponse.json({ error: "还没有配置发信邮箱，请先到设置里填写 SMTP" }, { status: 400 });
   }
-  const origin = process.env.APP_ORIGIN || new URL(request.url).origin;
   try {
-    await sendReportMail(settings, report, recipients, `${origin}/reports/${report.id}`);
+    await sendReportMail(settings, report, recipients);
   } catch (error) {
     console.error("[opinion] 报告邮件失败", describeMailError(error));
     return NextResponse.json({ error: `邮件没有发出：${describeMailError(error)}` }, { status: 502 });

@@ -32,7 +32,7 @@ function cell(label: string, value: string): string {
   return `<td style="padding:8px 10px;border:1px solid #e6e0d6;color:#6b645b;width:18%">${label}</td><td style="padding:8px 10px;border:1px solid #e6e0d6;font-variant-numeric:tabular-nums">${value}</td>`;
 }
 
-export function renderEmailHtml(report: Report, previewUrl: string): string {
+export function renderEmailHtml(report: Report): string {
   const quote = report.quote;
   const quoteRows = quote
     ? [
@@ -86,7 +86,7 @@ export function renderEmailHtml(report: Report, previewUrl: string): string {
       </tr>
       ${eventRows || `<tr><td colspan="5" style="padding:8px 10px;border:1px solid #e6e0d6">当日没有强相关事件。</td></tr>`}
     </table>
-    <p style="margin-top:20px">完整 Word 报告见附件。也可以 <a href="${previewUrl}">在系统里打开完整预览</a>。</p>
+    <p style="margin-top:20px">完整报告见附件 Word，文件名一般为「交控科技舆情日报-${report.date}.docx」。</p>
     <p style="color:#6b645b;font-size:12px">行情来自腾讯行情，公告来自上交所。新闻来自东方财富搜索，以及网易、同花顺和腾讯自选股的公开列表，只保留标题含公司名或证券代码的结果。热度是同题条数，不是阅读量。</p>
   </div>
 </body>
@@ -105,7 +105,7 @@ async function connectHost(host: string): Promise<{ host: string; servername?: s
   return { host: trimmed };
 }
 
-export async function sendReportMail(settings: AppSettings, report: Report, to: string | string[], previewUrl: string): Promise<void> {
+export async function sendReportMail(settings: AppSettings, report: Report, to: string | string[]): Promise<void> {
   if (!smtpReady(settings)) {
     throw new Error("还没有配置发信邮箱");
   }
@@ -129,8 +129,8 @@ export async function sendReportMail(settings: AppSettings, report: Report, to: 
     from,
     to: Array.isArray(to) ? to : [to],
     subject: `交控科技舆情日报 ${report.date}`,
-    text: `${report.overview}\n${report.peak}\n\n完整 Word 报告见附件。\n完整预览：${previewUrl}`,
-    html: renderEmailHtml(report, previewUrl),
+    text: `${report.overview}\n${report.peak}\n\n完整报告见附件 Word：${filename}`,
+    html: renderEmailHtml(report),
     attachments: [
       {
         filename,

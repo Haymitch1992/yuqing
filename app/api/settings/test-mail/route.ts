@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     warnings: [],
   } satisfies Report;
   try {
-    await sendReportMail(settings, sample, to, new URL("/", request.url).origin);
+    await sendReportMail(settings, sample, to);
   } catch (error) {
     console.error("[opinion] 测试信失败", describeMailError(error));
     return NextResponse.json({ error: `测试信没有发出：${describeMailError(error)}` }, { status: 502 });
