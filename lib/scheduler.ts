@@ -15,15 +15,20 @@ async function tick(): Promise<void> {
     const today = shanghaiToday();
     if (shanghaiClock() < settings.scheduleTime) return;
     if ((await readSchedulerStamp()) === today) return;
-    if (await readReport(today)) {
+    if (Date.now() - lastFailure < 10 * 60 * 1000) return;
+    const existing = await readReport(today);
+    if (existing?.sentAt) {
       await writeSchedulerStamp(today);
       return;
     }
-    if (Date.now() - lastFailure < 10 * 60 * 1000) return;
     const report = await buildReport(today);
     await writeReport(report);
     await writeSchedulerStamp(today);
-    console.log(`[opinion] 已生成 ${today} 的草稿，等待预览`);
+    console.log(
+      existing
+        ? `[opinion] 已更新 ${today} 的草稿，等待预览`
+        : `[opinion] 已生成 ${today} 的草稿，等待预览`,
+    );
   } catch (error) {
     lastFailure = Date.now();
     console.error("[opinion] 定时生成失败", error);

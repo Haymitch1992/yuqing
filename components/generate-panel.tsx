@@ -54,7 +54,7 @@ export function GeneratePanel({ today }: { today: string }) {
           required
         />
         <p className="text-sm text-[#6b645b]">
-          按上海时区的自然日采集。公告、新闻和行情分开取，生成大约需要十几秒。
+          按上海时区的自然日采集。同一天未发送的报告再点生成会重新采集并更新。公告、新闻和行情分开取，大约需要十几秒。
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

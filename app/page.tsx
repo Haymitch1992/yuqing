@@ -16,7 +16,7 @@ export default async function HomePage() {
       <section className="grid gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">先出草稿，看过再发</h1>
         <p className="max-w-3xl text-sm leading-6 text-[#3f3a34]">
-          每天 {settings.scheduleEnabled ? settings.scheduleTime : "（定时已关闭）"}（上海时间）会生成交控科技当日草稿。
+          每天 {settings.scheduleEnabled ? settings.scheduleTime : "（定时已关闭）"}（上海时间）会生成交控科技当日草稿；中午已有未发送草稿时，晚上到点或再点生成都会重新采集。
           打开预览之后，才能发到邮箱。当前发信{smtpReady(settings) ? "已配置" : "还没配置"}。
         </p>
       </section>

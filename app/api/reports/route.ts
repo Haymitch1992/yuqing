@@ -34,16 +34,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "只能生成今天或过去一年内的报告" }, { status: 400 });
   }
   const existing = await readReport(date);
-  if (existing && !body?.refresh) {
+  if (existing?.sentAt) {
+    if (body?.refresh) {
+      return NextResponse.json({ error: "这份报告已经发送，不能覆盖" }, { status: 409 });
+    }
     return NextResponse.json({ id: existing.id, existed: true });
-  }
-  if (existing?.sentAt && body?.refresh) {
-    return NextResponse.json({ error: "这份报告已经发送，不能覆盖" }, { status: 409 });
   }
   try {
     const report = await buildReport(date);
     await writeReport(report);
-    return NextResponse.json({ id: report.id, existed: false });
+    return NextResponse.json({ id: report.id, existed: Boolean(existing), refreshed: Boolean(existing) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "生成失败";
     return NextResponse.json({ error: message }, { status: 502 });
